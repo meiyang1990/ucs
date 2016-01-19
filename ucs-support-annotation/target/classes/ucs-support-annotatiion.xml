@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+	<bean id="ucs.support.annotation.cacheBuilder" class="com.netfinworks.basis.inf.ucs.support.annotation.advice.EUCacheBuilder"
+		lazy-init="true">
+		<property name="localCacheMaxSize" value="${ucs.support.annotation.cache.localCacheMaxSize}" />
+		<property name="name" value="${ucs.support.annotation.cache.name}" />
+		<property name="nameServerAddress" value="${ucs.support.annotation.cache.name.nameServerAddress}" />
+		<property name="memcachedConnectionPoolSize" value="${ucs.support.annotation.cache.memcachedConnectionPoolSize}" />
+		<property name="connectTimeoutMs" value="${ucs.support.annotation.cache.connectTimeoutMs}" />
+		<property name="opTimeoutMs" value="${ucs.support.annotation.cache.opTimeoutMs}" />
+		<property name="listeners" value="${ucs.support.annotation.cache.listenerBeanNames}" />
+	</bean>
+
+	<bean id="ucs.support.annotation.euCache" factory-bean="ucs.support.annotation.cacheBuilder"
+		factory-method="build" lazy-init="true" destroy-method="destroy"></bean>
+
+	<bean id="ucs.support.annotation.cacheBaseAdvice" class="com.netfinworks.basis.inf.ucs.support.annotation.advice.CacheAdviceBase"
+		lazy-init="true">
+		<property name="cache" ref="ucs.support.annotation.euCache" />
+	</bean>
+
+	<bean class="com.netfinworks.basis.inf.ucs.support.annotation.advice.CacheDefaultConfig" factory-method="getInstance">
+		<property name="defaultExpireSecond" value="${ucs.support.cache.conf.defaultExpireSecond}" />
+	</bean>
+
+
+	<bean class="com.netfinworks.basis.inf.ucs.support.annotation.advice.CacheResultAdvice" parent="ucs.support.annotation.cacheBaseAdvice"
+		lazy-init="true">
+	</bean>
+	<bean class="com.netfinworks.basis.inf.ucs.support.annotation.advice.InvalidateCacheAdvice" parent="ucs.support.annotation.cacheBaseAdvice"
+		lazy-init="true">
+	</bean>
+	<bean class="com.netfinworks.basis.inf.ucs.support.annotation.advice.UpdateCacheAdvice" parent="ucs.support.annotation.cacheBaseAdvice"
+		lazy-init="true">
+	</bean>
+	<bean class="com.netfinworks.basis.inf.ucs.support.annotation.advice.CacheIncreaseAdvice" parent="ucs.support.annotation.cacheBaseAdvice"
+		lazy-init="true">
+	</bean>
+	<bean class="com.netfinworks.basis.inf.ucs.support.annotation.advice.CacheDecreaseAdvice" parent="ucs.support.annotation.cacheBaseAdvice"
+		lazy-init="true">
+	</bean>
+</beans>

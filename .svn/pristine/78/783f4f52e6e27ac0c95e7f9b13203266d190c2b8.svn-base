@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+	<context:property-placeholder location="file:///opt/pay/config/basis/ucs/ucs-common-listener.properties"/>
+	
+	<bean id="mnsUtil" class="com.netfinworks.basis.inf.ucs.mqlistener.util.MNSUtil" init-method="init">
+		<property name="emailTitle" value="${ucs.warn.emailTitle}" />
+		<property name="mnsAppId" value="${ucs.warn.mnsAppId}" />
+		<property name="mnsMsgNotifyUrl" value="${ucs.warn.mnsMsgNotifyUrl}" />
+	</bean>
+	
+	
+	<!-- mq framework -->
+	<import resource="classpath:context/netfinworks-mq-jms-client.xml" />
+	<import resource="classpath:context/netfinworks-mq-jms-listener.xml" />
+
+	<bean id="configParser" class="com.netfinworks.basis.inf.ucs.mqlistener.util.ConfigParser">
+		<property name="prefix" value="ucs.warn.email.sender" />
+	</bean>
+
+	<bean id="commonListener" class="com.netfinworks.basis.inf.ucs.mqlistener.CommonListener" init-method="init">
+		<property name="failoverService" ref="commonFailoverService" />
+		<property name="concurrentConsumers" value="${ucs.support.annotation.cache.commonListener.consumerCount}" />
+		<property name="genericClass" value="java.util.HashMap" />
+		<property name="destination" value="${ucs.support.annotation.cache.commonListener.queueName}" />
+		<property name="mnsUtil" ref="mnsUtil" />
+		<property name="alertConfig" value="/opt/pay/config/basis/ucs/ucs-common-listener.properties" />
+		<property name="configParser" ref="configParser" />
+	</bean>
+
+
+
+	<bean id="messageHandlerContainer" class="com.netfinworks.mq.listener.DefaultMessageHandlerContainer" init-method="init">
+		<property name="connectionFactory" ref="pooledConnectionFactory" />
+		<property name="destinationInfoFactory" ref="destinationInfoFactory" />
+		<property name="messageHandlers">
+			<list>
+				<ref bean="commonListener" />
+			</list>
+		</property>
+	</bean>
+</beans>
